@@ -1,0 +1,12 @@
+{
+  "name": "alteris",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Altéris — outil pour Dofus (simulateur de build, impact des patchs, routes de farm).",
+  "scripts": {
+    "capture": "node build/capture.mjs",
+    "build": "node build/capture.mjs && node build/build.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

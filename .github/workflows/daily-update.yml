@@ -1,0 +1,51 @@
+name: Mise à jour quotidienne Dofus
+
+# Vérifie chaque jour la version du jeu (dofusdude), régénère index.html,
+# et pousse s'il y a du changement. Vercel (connecté en Git) redéploie sur push.
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # tous les jours à 06:00 UTC
+  workflow_dispatch: {} # bouton "Run workflow" manuel
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Capture des données + build
+        run: |
+          node build/capture.mjs
+          node build/build.mjs
+
+      - name: Commit & push si changement
+        run: |
+          git config user.name "alteris-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Aucun changement — pas de redéploiement."
+          else
+            git commit -m "chore: maj données Dofus ($(date -u +%F))"
+            git push
+          fi
+
+  # --- OPTION sans intégration Git Vercel : décommente et ajoute les secrets ---
+  # deploy:
+  #   needs: update
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: npm i -g vercel@latest
+  #     - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+  #       env: { VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}, VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }} }
+  #     - run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+  #       env: { VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}, VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }} }

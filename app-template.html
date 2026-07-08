@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Altéris — Outil pour Dofus</title>
+<style>
+  @font-face{font-family:'Titan One';font-style:normal;font-weight:400;font-display:swap;
+    src:url(data:font/woff2;base64,/*FONT_B64*/) format('woff2');}
+  :root{ color-scheme:light;
+    --dark:#29272a; --dark2:#1d1c1a; --lime:#90b83e; --white:#ffffff;
+    --lime-bright:#a9d651; --gold:#f2b01e; --red:#e8514b;
+    --panel:#343135; --panel2:#2e2b30; --muted:#a7a39a; --line:#454149; --violet:#b98cf0;
+    --neutre:#d9d4c8; --terre:#8fae3e; --feu:#e8743b; --eau:#3d97e8; --air:#5cc9c0;
+    --title:'Titan One','Trebuchet MS',system-ui,sans-serif;
+    --body:'Trebuchet MS','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);
+    background:radial-gradient(1100px 700px at 50% -12%, #38343e 0%, var(--dark) 42%, var(--dark2) 100%);
+    color:var(--white);min-height:100vh}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 16px 60px}
+  .nav{position:sticky;top:0;z-index:20;background:#211f22ee;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-bottom:22px}
+  .navin{max-width:1020px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);color:var(--white);border:2px solid var(--lime);
+    font-family:var(--title);font-size:16px;padding:5px 13px 5px 10px;border-radius:11px;box-shadow:0 3px 0 #6f9130;cursor:pointer;letter-spacing:.5px}
+  .brand svg{filter:drop-shadow(0 0 4px #8fd13f88)}
+  .tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+  .tab{background:transparent;color:var(--muted);border:2px solid transparent;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .12s}
+  .tab:hover{color:var(--white)} .tab.active{background:var(--panel);color:var(--lime-bright);border-color:var(--line)}
+  .view{display:none} .view.active{display:block}
+  header{text-align:center;margin-bottom:20px}
+  h1{font-family:var(--title);font-size:38px;letter-spacing:.5px;margin:8px 0 8px;color:var(--white);text-shadow:0 3px 0 rgba(0,0,0,.25)}
+  h1 .accent{color:var(--lime-bright)}
+  .tagline{color:var(--muted);font-size:15px;max-width:620px;margin:0 auto;line-height:1.5}
+  .vbar{display:flex;gap:12px;align-items:center;justify-content:center;margin:20px auto;flex-wrap:wrap}
+  .pill{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:9px 17px;font-weight:800;font-size:16px}
+  .pill small{display:block;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-top:2px}
+  .pill.beta{border-color:var(--gold)} .arrow{font-size:22px;color:var(--lime-bright);font-weight:800}
+  .cta{display:inline-block;margin-top:6px;background:var(--lime);color:var(--dark);font-family:var(--title);font-size:15px;padding:12px 22px;border-radius:12px;box-shadow:0 4px 0 #6f9130,0 8px 18px rgba(0,0,0,.4);border:none;cursor:pointer;letter-spacing:.5px}
+  .cta:active{transform:translateY(2px);box-shadow:0 2px 0 #6f9130}
+  h2{font-family:var(--title);font-size:19px;letter-spacing:.3px;margin:26px 0 13px;display:flex;align-items:center;gap:9px;font-weight:400}
+  .badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:18px;color:var(--dark);background:var(--muted);font-family:var(--body)}
+  .badge.gold{background:var(--gold)} .badge.lime{background:var(--lime-bright)} .badge.red{background:var(--red)} .badge.vio{background:var(--violet)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 26px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px 12px;text-align:center;position:relative;overflow:hidden}
+  .stat .num{font-family:var(--title);font-size:30px;line-height:1}
+  .stat .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:8px;font-weight:700}
+  .stat.added .num{color:var(--gold)} .stat.up .num{color:var(--lime-bright)} .stat.down .num{color:var(--red)} .stat.rem .num{color:var(--muted)}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+  .stat.added::before{background:var(--gold)} .stat.up::before{background:var(--lime-bright)} .stat.down::before{background:var(--red)} .stat.rem::before{background:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px;display:flex;gap:11px;align-items:center;transition:transform .12s,border-color .12s}
+  .card:hover{transform:translateY(-3px);border-color:var(--lime)}
+  .card img{width:44px;height:44px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+  .card .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .meta{font-size:11px;color:var(--muted);margin-top:3px}
+  .change{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+  .change.up{border-left:5px solid var(--lime-bright)} .change.down{border-left:5px solid var(--red)}
+  .change .nm{font-weight:700;font-size:15px;margin-bottom:6px}
+  .eff{font-size:13px;padding:3px 0;color:#ddd8cf}
+  .up{color:var(--lime-bright);font-weight:800} .down{color:var(--red);font-weight:800}
+  .empty{text-align:center;padding:28px 22px;background:var(--panel);border:1px dashed var(--line);border-radius:15px;color:var(--muted);font-size:14px;line-height:1.6}
+  .empty strong{color:var(--white)}
+  .synth{margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .synth summary{cursor:pointer;padding:13px 16px;font-weight:700;font-size:13px;color:var(--gold);background:#2f2c30;list-style:none}
+  .synth summary::-webkit-details-marker{display:none}
+  .synth .inner{padding:14px 16px;background:#00000022}
+  .synth .note{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+  /* SIM */
+  .toolbar{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 auto 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;max-width:560px}
+  .toolbar label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
+  .lvlwrap{display:flex;align-items:center;gap:10px;flex:1;min-width:220px}
+  input[type=range]{flex:1;accent-color:var(--lime)}
+  #lvlnum{width:58px;background:var(--panel2);border:2px solid var(--line);border-radius:8px;color:var(--white);padding:6px;font-family:inherit;font-weight:800;text-align:center;font-size:14px}
+  #lvlnum:focus{outline:none;border-color:var(--lime)}
+  .btn{background:var(--panel2);color:var(--white);border:2px solid var(--line);border-radius:9px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer}
+  .btn:hover{border-color:var(--lime)} .btn.danger:hover{border-color:var(--red);color:var(--red)}
+  .layout{display:grid;grid-template-columns:1fr 350px;gap:18px}
+  @media(max-width:820px){.layout{grid-template-columns:1fr}}
+  .slots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-content:start}
+  .slot{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;gap:11px;align-items:center;min-height:66px;cursor:pointer;transition:border-color .12s,transform .12s}
+  .slot:hover{border-color:var(--lime);transform:translateY(-2px)}
+  .slot .ph{width:44px;height:44px;border-radius:10px;background:linear-gradient(160deg,#3a3640,#2a2830);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--line)}
+  .slot .info{min-width:0;flex:1} .slot .slabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
+  .slot .iname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .slot .setdot{font-size:10px;color:var(--violet);font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot .x{color:var(--muted);font-size:18px;padding:0 4px} .slot .x:hover{color:var(--red)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;align-self:start;position:sticky;top:74px}
+  .panel h3{font-size:12px;text-transform:uppercase;letter-spacing:1.3px;margin:14px 0 8px;color:var(--muted)}
+  .panel h3:first-child{margin-top:0} .panel h3.pano{color:var(--violet)}
+  .setcard{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--violet);border-radius:10px;padding:10px 11px;margin-bottom:9px}
+  .setcard .sn{font-size:13px;font-weight:800} .setcard .sc{font-size:11px;color:var(--muted);margin:2px 0 6px}
+  .setcard .sb{font-size:12px;color:var(--violet);line-height:1.5;margin-bottom:8px}
+  .members{display:flex;flex-direction:column;gap:4px}
+  .mem{display:flex;align-items:center;gap:7px;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+  .mem .mn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mem .mslot{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .mem .add{background:var(--violet);color:var(--dark);border-radius:7px;padding:3px 9px;font-weight:800;font-size:11px;border:none;cursor:pointer}
+  .mem.on{opacity:.55} .mem.on .mn{color:var(--lime-bright)} .mem .eqmark{color:var(--lime-bright);font-weight:800} .mem .full{color:var(--muted);font-size:10px}
+  .statgroup{margin-bottom:4px} .statwrap{position:relative}
+  .statrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;transition:background .1s}
+  .statwrap:hover .statrow{background:#ffffff12}
+  .statrow .dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .statrow .nm{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .statrow .val{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+  .statrow .val.pos{color:var(--lime-bright)} .statrow .val.neg{color:var(--red)}
+  .breakdown{display:flex;opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .16s ease,transform .16s ease;position:absolute;top:calc(100% - 2px);left:0;right:0;z-index:8;background:#242227;border:1px solid var(--line);border-radius:10px;padding:8px 10px;flex-direction:column;gap:4px;box-shadow:0 10px 26px rgba(0,0,0,.55)}
+  .statwrap:hover .breakdown{opacity:1;visibility:visible;transform:none}
+  .bd{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--muted)}
+  .bd .bv{font-weight:800;color:#ddd8cf;font-variant-numeric:tabular-nums;flex-shrink:0} .bd.set .bl{color:var(--violet)}
+  .emptot{color:var(--muted);font-size:13px;text-align:center;padding:18px 6px;line-height:1.5}
+  .divider{height:1px;background:var(--line);margin:12px 0}
+  .itemcount{color:var(--muted);font-size:12px;margin-top:10px;text-align:center}
+  /* FARM */
+  .selectrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+  .ep{border:2px solid var(--line);background:var(--panel);color:var(--white);border-radius:11px;padding:9px 16px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .ep .sw{width:12px;height:12px;border-radius:4px}
+  .ep.active{border-color:var(--white);box-shadow:0 0 0 2px #ffffff22}
+  .bp{border:2px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:7px 12px;font-weight:800;font-size:12px;cursor:pointer}
+  .bp.active{background:var(--lime);color:var(--dark);border-color:var(--lime)}
+  .farmnote{font-size:12px;color:var(--muted);text-align:center;max-width:640px;margin:0 auto 16px;line-height:1.5}
+  .kwarn{background:#3a2f22;border:1px solid #6b4f2a;border-radius:12px;padding:11px 14px;font-size:12.5px;color:#e8c48a;margin:0 auto 18px;max-width:720px;line-height:1.5}
+  .zone{background:var(--panel);border:1px solid var(--line);border-radius:13px;margin-bottom:10px;overflow:hidden}
+  .zhead{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer}
+  .zrank{font-family:var(--title);font-size:18px;color:var(--muted);width:26px;text-align:center;flex-shrink:0}
+  .zmain{flex:1;min-width:0}
+  .zname{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .zmeta{font-size:11px;color:var(--muted);margin-top:2px}
+  .zres{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+  .rchip{font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px;border:2px solid transparent;min-width:52px;text-align:center;background:#00000030}
+  .rchip small{display:block;font-size:8.5px;font-weight:700;opacity:.8;text-transform:uppercase}
+  .rchip.sel{border-color:currentColor}
+  .zmons{display:none;padding:0 15px 13px;flex-direction:column;gap:5px}
+  .zone.open .zmons{display:flex}
+  .zmon{display:flex;align-items:center;gap:10px;font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+  .zmon .zmn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .zmon .zml{color:var(--muted);font-size:11px} .zmon .zmr{font-weight:800;font-variant-numeric:tabular-nums} .zmon .zmx{color:var(--gold);font-size:11px;font-weight:700}
+  /* modal */
+  .modal{position:fixed;inset:0;background:#000000bb;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:40;overflow:auto}
+  .modal.open{display:flex}
+  .modbox{background:var(--dark);border:1px solid var(--line);border-radius:16px;max-width:560px;width:100%;padding:18px}
+  .modbox .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .modbox h4{font-family:var(--title);font-size:17px;font-weight:400}
+  .modbox .close{background:var(--panel);border-radius:8px;padding:5px 11px;font-weight:800;color:var(--muted);border:none;cursor:pointer}
+  .modbox input.search{width:100%;background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:14px;margin-bottom:10px}
+  .modbox input.search:focus{outline:none;border-color:var(--lime)}
+  .list{max-height:52vh;overflow:auto;display:flex;flex-direction:column;gap:7px}
+  .row{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px;cursor:pointer}
+  .row:hover{border-color:var(--lime)}
+  .row .ph{width:38px;height:38px;border-radius:8px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .row .rn{font-size:13px;font-weight:700} .row .rset{font-size:10px;color:var(--violet);font-weight:700}
+  .row .rm{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
+  .row .lv{margin-left:auto;font-size:11px;color:var(--gold);font-weight:800;flex-shrink:0}
+  .count{font-size:11px;color:var(--muted);margin-bottom:8px}
+  footer{text-align:center;margin-top:40px;color:var(--muted);font-size:11px;line-height:1.7}
+  /* ===== MOTION & POLISH (2026) ===== */
+  .ambient{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .ambient span{position:absolute;border-radius:50%;filter:blur(46px);opacity:.20;background:radial-gradient(circle,#9be24a,transparent 70%);will-change:transform}
+  .ambient span:nth-child(1){width:360px;height:360px;left:-70px;top:6%;animation:drift 26s ease-in-out infinite}
+  .ambient span:nth-child(2){width:280px;height:280px;right:-50px;top:42%;background:radial-gradient(circle,#5fc9c0,transparent 70%);opacity:.13;animation:drift 31s ease-in-out infinite -6s}
+  .ambient span:nth-child(3){width:320px;height:320px;left:32%;bottom:-90px;background:radial-gradient(circle,#f2b01e,transparent 70%);opacity:.09;animation:drift 35s ease-in-out infinite -12s}
+  .nav,.wrap{position:relative;z-index:1}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(34px,-42px) scale(1.06)}66%{transform:translate(-26px,26px) scale(.96)}}
+  .view.active{animation:viewIn .5s cubic-bezier(.2,.7,.2,1)}
+  @keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .brand{transition:transform .16s ease,box-shadow .25s ease}
+  .brand:hover{transform:translateY(-1px);box-shadow:0 3px 0 #6f9130,0 0 18px #8fd13f77}
+  .brand svg{animation:floaty 4.6s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2.5px) rotate(-1.5deg)}}
+  .tab{transition:color .15s,background .15s,border-color .15s,transform .12s}
+  .tab:hover{transform:translateY(-1px)}
+  .cta{position:relative;overflow:hidden;animation:breathe 3.2s ease-in-out infinite;transition:transform .12s}
+  .cta:hover{transform:translateY(-2px)}
+  @keyframes breathe{0%,100%{box-shadow:0 4px 0 #6f9130,0 6px 16px rgba(0,0,0,.4)}50%{box-shadow:0 4px 0 #6f9130,0 8px 24px #8fd13f66}}
+  .cta::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,#ffffff66,transparent);transform:skewX(-20deg);animation:swipe 5s ease-in-out infinite}
+  @keyframes swipe{0%,55%{left:-70%}78%,100%{left:140%}}
+  .stat,.card,.change,.zone,.setcard{transition:transform .14s ease,border-color .14s ease,box-shadow .2s ease}
+  .stat:hover{transform:translateY(-3px);border-color:var(--lime);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+  .card:hover,.zone:hover{box-shadow:0 8px 22px rgba(0,0,0,.35)}
+  .zone:hover{border-color:var(--lime)}
+  .setcard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+  .ep,.bp{transition:transform .12s,border-color .15s,background .15s,color .15s,box-shadow .2s}
+  .ep:hover,.bp:hover{transform:translateY(-1px)}
+  .ep.active{animation:epGlow 2.6s ease-in-out infinite}
+  @keyframes epGlow{0%,100%{box-shadow:0 0 0 2px #ffffff22,0 0 12px -3px currentColor}50%{box-shadow:0 0 0 2px #ffffff33,0 0 20px -1px currentColor}}
+  .slot{transition:border-color .14s ease,transform .14s ease,box-shadow .2s ease}
+  .slot:hover{box-shadow:0 8px 20px rgba(0,0,0,.32)}
+  .rchip.sel{box-shadow:0 0 12px -3px currentColor}
+  .btn,.mem .add{transition:transform .12s,border-color .15s,color .15s,box-shadow .2s}
+  .btn:hover{transform:translateY(-1px)} .mem .add:hover{transform:translateY(-1px);box-shadow:0 4px 12px #b98cf055}
+  .zmon{transition:transform .12s,background .12s} .zmon:hover{transform:translateX(3px);background:#37333b}
+  /* feuilles qui tombent */
+  .ambient .leaf{position:absolute;top:-6vh;width:13px;height:13px;background:linear-gradient(135deg,#a9d651,#6fae30);border-radius:0 100% 0 100%;opacity:0;animation:fall linear infinite}
+  .ambient .leaf:nth-child(4){left:12%;animation-duration:15s;animation-delay:-2s}
+  .ambient .leaf:nth-child(5){left:29%;animation-duration:19s;animation-delay:-8s;width:10px;height:10px}
+  .ambient .leaf:nth-child(6){left:48%;animation-duration:17s;animation-delay:-5s}
+  .ambient .leaf:nth-child(7){left:67%;animation-duration:21s;animation-delay:-12s;width:11px;height:11px}
+  .ambient .leaf:nth-child(8){left:81%;animation-duration:16s;animation-delay:-3s}
+  .ambient .leaf:nth-child(9){left:93%;animation-duration:20s;animation-delay:-9s;width:9px;height:9px}
+  @keyframes fall{0%{transform:translateY(0) rotate(0);opacity:0}8%{opacity:.32}90%{opacity:.32}100%{transform:translateY(114vh) rotate(320deg);opacity:0}}
+  /* reflet mouvant sur les titres */
+  h1{background:linear-gradient(100deg,#fff 0%,#fff 42%,#eaffb8 50%,#fff 58%,#fff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:230% 100%;animation:titleSheen 6.5s linear infinite;text-shadow:none}
+  h1 .accent{-webkit-text-fill-color:var(--lime-bright)}
+  @keyframes titleSheen{0%{background-position:130% 0}100%{background-position:-30% 0}}
+  /* entrée en cascade */
+  .view.active .stats .stat,.view.active .grid .card,.view.active .change,.view.active #farm-content .zone{animation:cardUp .5s cubic-bezier(.2,.7,.2,1) both}
+  .view.active .stats .stat:nth-child(2){animation-delay:.06s}.view.active .stats .stat:nth-child(3){animation-delay:.12s}.view.active .stats .stat:nth-child(4){animation-delay:.18s}
+  .view.active .grid .card:nth-child(2){animation-delay:.05s}.view.active .grid .card:nth-child(3){animation-delay:.1s}.view.active .grid .card:nth-child(4){animation-delay:.15s}.view.active .grid .card:nth-child(5){animation-delay:.2s}.view.active .grid .card:nth-child(n+6){animation-delay:.24s}
+  .view.active #farm-content .zone:nth-child(2){animation-delay:.09s}.view.active #farm-content .zone:nth-child(3){animation-delay:.18s}
+  @keyframes cardUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.05s!important}.ambient{display:none}}
+</style>
+</head>
+<body>
+<div class="ambient"><span></span><span></span><span></span><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i></div>
+<div class="nav"><div class="navin">
+  <div class="brand" data-go="home"><svg viewBox="0 0 512 512" width="22" height="22" aria-hidden="true"><defs><linearGradient id="bgem" x1="0.3" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#e6ffab"/><stop offset="0.42" stop-color="#93d84a"/><stop offset="1" stop-color="#4c8a22"/></linearGradient></defs><polygon points="256,60 366,196 336,410 256,456 176,410 146,196" fill="url(#bgem)" stroke="#eaffb8" stroke-width="10" stroke-linejoin="round"/><polygon points="256,60 366,196 256,232 146,196" fill="#ffffff" opacity="0.28"/><polygon points="146,196 256,232 176,410" fill="#3f7a1e" opacity="0.3"/><polygon points="366,196 336,410 256,232" fill="#c7ef78" opacity="0.3"/><path d="M256,392 C256,352 292,344 292,312 C292,286 268,282 262,300 C258,312 272,320 282,312" fill="none" stroke="#2f5416" stroke-width="16" stroke-linecap="round"/><path d="M256,392 L256,300" stroke="#2f5416" stroke-width="16" stroke-linecap="round"/><path d="M256,300 C274,294 290,302 292,318 C274,320 258,314 256,300 Z" fill="#a9d651" stroke="#2f5416" stroke-width="8"/><path d="M256,336 C238,330 224,338 222,354 C240,356 254,350 256,336 Z" fill="#8fd13f" stroke="#2f5416" stroke-width="8"/></svg>Altéris</div>
+  <div class="tabs">
+    <button class="tab active" data-go="home">Patchs</button>
+    <button class="tab" data-go="sim">Simulateur</button>
+    <button class="tab" data-go="farm">Routes de farm</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <!-- ACCUEIL -->
+  <div class="view active" id="view-home">
+    <header>
+      <h1>Impact des <span class="accent">patchs</span></h1>
+      <p class="tagline">Le seul simulateur qui suit le temps : ce qui change entre deux versions du jeu, item par item.</p>
+      <div class="vbar" id="vbar"></div>
+      <button class="cta" data-go="sim">⚔️ Ouvrir le simulateur →</button>
+    </header>
+    <div id="home-content"></div>
+    <footer>Données : dofusdude & DofusDB (APIs communautaires, non affiliées à Ankama) · Dofus™ Ankama.</footer>
+  </div>
+
+  <!-- SIMULATEUR -->
+  <div class="view" id="view-sim">
+    <header>
+      <h1>Simulateur de <span class="accent">build</span></h1>
+      <p class="tagline">Assemble ton stuff, bonus de panoplie inclus. Survole une stat pour voir qui apporte quoi.</p>
+    </header>
+    <div class="toolbar">
+      <div class="lvlwrap"><label>Niv max</label>
+        <input type="range" id="lvlrange" min="1" max="200" value="200"/>
+        <input id="lvlnum" type="number" min="1" max="200" value="200"/></div>
+      <button class="btn danger" id="reset">Tout retirer</button>
+    </div>
+    <div class="layout">
+      <div class="slots" id="slots"></div>
+      <div class="panel">
+        <div id="panos"></div>
+        <div id="totals"><div class="emptot">Équipe des items pour voir tes stats.<br/>Survole une caractéristique pour voir la contribution de chaque item.</div></div>
+        <div class="itemcount" id="itemcount"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTES DE FARM -->
+  <div class="view" id="view-farm">
+    <header>
+      <h1>Routes de <span class="accent">farm</span></h1>
+      <p class="tagline">Choisis ta voie élémentaire et ton palier : voici les zones où les monstres résistent le moins à ton élément — donc où tu tapes le plus fort et farm le plus vite.</p>
+    </header>
+    <div class="selectrow" id="modesel"></div>
+    <div class="selectrow" id="elemsel"></div>
+    <div class="selectrow" id="brsel"></div>
+    <div class="farmnote" id="farmnote"></div>
+    <div id="farm-content"></div>
+    <footer id="farmfoot"></footer>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="modbox">
+  <div class="hd"><h4 id="modaltitle">Choisir un item</h4><button class="close" id="close">✕ Fermer</button></div>
+  <input class="search" id="search" placeholder="Rechercher un item…" autocomplete="off"/>
+  <div class="count" id="modalcount"></div>
+  <div class="list" id="list"></div>
+</div></div>
+
+<script>
+const DIFF = /*DIFF_DATA*/{}/*END_DIFF*/;
+const DATA = /*PICKER_DATA*/{version:"",items:[],sets:{}}/*END_PICKER*/;
+const FARM = /*ZONES_DATA*/{version:"",zones:[]}/*END_ZONES*/;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+
+function go(v){document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+v));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.getAttribute("data-go")===v));
+  window.scrollTo({top:0,behavior:"smooth"});}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g)go(g.getAttribute("data-go"));});
+
+/* ===== ACCUEIL ===== */
+(function(){
+  function arrow(f,t){if(t>f)return '<span class="up">↑ +'+(t-f)+'</span>';if(t<f)return '<span class="down">↓ '+(t-f)+'</span>';return '='}
+  function stat(cls,n,lbl){return '<div class="stat '+cls+'"><div class="num">'+n+'</div><div class="lbl">'+lbl+'</div></div>'}
+  function card(it){const ic=it.dataUri?'<img src="'+it.dataUri+'" alt=""/>':'';const lv=it.level?'Niv '+it.level:'';
+    return '<div class="card">'+ic+'<div style="min-width:0"><div class="nm">'+esc(it.name)+'</div><div class="meta">'+esc(it.type||'Objet')+(lv?' · '+lv:'')+'</div></div></div>'}
+  function classify(ch){let up=(ch.addE&&ch.addE.length)>0,down=(ch.remE&&ch.remE.length)>0;
+    for(const m of ch.mods||[]){if(m.minT>m.minF||m.maxT>m.maxF)up=true;if(m.minT<m.minF||m.maxT<m.maxF)down=true;}
+    if(up&&down)return 'rem';if(up)return 'up';if(down)return 'down';return 'neutre'}
+  function changeRow(ch,cls){const ic=ch.dataUri?'<img src="'+ch.dataUri+'" style="width:40px;height:40px"/>':'';let r='';
+    for(const m of ch.mods||[])r+='<div class="eff">'+esc(m.name)+' : '+m.minF+'–'+m.maxF+' → <strong>'+m.minT+'–'+m.maxT+'</strong> ('+arrow(m.minF,m.minT)+' / '+arrow(m.maxF,m.maxT)+')</div>';
+    for(const e of ch.addE||[])r+='<div class="eff"><span class="up">+ '+esc(e.formatted||e.name)+'</span> (nouvel effet)</div>';
+    for(const e of ch.remE||[])r+='<div class="eff"><span class="down">− '+esc(e.formatted||e.name)+'</span> (retiré)</div>';
+    return '<div class="change '+cls+'">'+ic+'<div><div class="nm">'+esc(ch.name)+'</div>'+r+'</div></div>'}
+  const SYNTH=[{name:"Item exemple A",mods:[{name:"Force",minF:20,minT:35,maxF:40,maxT:60},{name:"Vitalité",minF:50,minT:80,maxF:50,maxT:80}]},
+    {name:"Item exemple B",mods:[{name:"Puissance",minF:15,minT:8,maxF:30,maxT:15}],remE:[{name:"20 Sagesse"}]}];
+  const buckets={up:[],down:[],rem:[]};
+  for(const ch of DIFF.changed||[]){const k=classify(ch);if(buckets[k])buckets[k].push(ch)}
+  document.getElementById("vbar").innerHTML='<div class="pill">'+DIFF.from.v+'<small>'+DIFF.from.r+' (live)</small></div><div class="arrow">➜</div><div class="pill beta">'+DIFF.to.v+'<small>'+DIFF.to.r+' (à venir)</small></div>';
+  let html='<div class="stats">'+stat("added",DIFF.summary.added,"Nouveaux items")+stat("up",buckets.up.length,"Items renforcés")+stat("down",buckets.down.length,"Items affaiblis")+stat("rem",DIFF.summary.removed,"Items retirés")+'</div>';
+  html+='<section><h2>▲ Items renforcés <span class="badge lime">'+buckets.up.length+'</span></h2>'+(buckets.up.length?buckets.up.map(c=>changeRow(c,'up')).join(""):'<div class="empty">Aucun item renforcé dans ce patch.</div>')+'</section>';
+  html+='<section><h2>▼ Items affaiblis <span class="badge red">'+buckets.down.length+'</span></h2>'+(buckets.down.length?buckets.down.map(c=>changeRow(c,'down')).join(""):'<div class="empty">Aucun item affaibli dans ce patch.</div>')+'</section>';
+  if((DIFF.summary.changed||0)===0){html+='<div class="empty" style="margin-top:6px"><strong>Ce patch (beta 3.6.7.7) ne rééquilibre aucun item.</strong><br/>Tous les patchs ne touchent pas les stats — ici, surtout de nouveaux items.</div>'
+    +'<details class="synth"><summary>▸ Voir à quoi ressemble le rendu buff / nerf (exemple synthétique)</summary><div class="inner"><div class="note">⚠️ Données inventées à titre d\'illustration — pas un vrai patch.</div>'+changeRow(SYNTH[0],'up')+changeRow(SYNTH[1],'down')+'</div></details>';}
+  html+='<section><h2>✦ Nouveaux items <span class="badge gold">'+DIFF.summary.added+'</span></h2>'+(DIFF.added.length?'<div class="grid">'+DIFF.added.map(card).join("")+'</div>':'<div class="empty">Aucun nouvel item.</div>')+'</section>';
+  document.getElementById("home-content").innerHTML=html;
+})();
+
+/* ===== SIMULATEUR ===== */
+const SLOTS=[["coiffe","Coiffe","Coiffe","🪖"],["amulette","Amulette","Amulette","📿"],["anneau1","Anneau","Anneau","💍"],["anneau2","Anneau","Anneau","💍"],["cape","Cape","Cape","🧥"],["ceinture","Ceinture","Ceinture","🎗️"],["bottes","Bottes","Bottes","🥾"],["bouclier","Bouclier","Bouclier","🛡️"],["arme","Arme","Arme","⚔️"],["familier","Familier","Familier / Monture","🐾"],["dofus1","Dofus","Dofus / Trophée","🥚"],["dofus2","Dofus","Dofus / Trophée","🥚"],["dofus3","Dofus","Dofus / Trophée","🥚"],["dofus4","Dofus","Dofus / Trophée","🥚"],["dofus5","Dofus","Dofus / Trophée","🥚"],["dofus6","Dofus","Dofus / Trophée","🥚"]];
+const slotEmoji={}; for(const s of SLOTS)slotEmoji[s[1]]=s[3];
+const byId=new Map(DATA.items.map(i=>[i.id,i]));
+const byCat={}, bySet={};
+for(const i of DATA.items){(byCat[i.s]=byCat[i.s]||[]).push(i); if(i.set)(bySet[i.set]=bySet[i.set]||[]).push(i);}
+const LS="builddiff_build_"+DATA.version;
+let build={}, maxLvl=200, activeSlot=null;
+try{build=JSON.parse(localStorage.getItem(LS))||{}}catch(e){build={}}
+const $=id=>document.getElementById(id);
+function save(){try{localStorage.setItem(LS,JSON.stringify(build))}catch(e){}}
+function effSummary(it,n){const a=(it.e||[]).slice(0,n).map(e=>(e[2]??e[1])+" "+e[0]);return a.length?a.join(", "):"—"}
+function elemColor(name){const l=norm(name);if(l.includes("neutre"))return "var(--neutre)";if(l.includes("terre")||l==="force")return "var(--terre)";if(l.includes("feu")||l==="intelligence")return "var(--feu)";if(l.includes("eau")||l==="chance")return "var(--eau)";if(l.includes("air")||l==="agilite")return "var(--air)";return null;}
+function category(name){const l=norm(name);if(l.includes("resistance"))return "res";if(l.includes("dommage"))return "dmg";return "prim";}
+function catColor(c){return c==="dmg"?"var(--gold)":c==="res"?"var(--violet)":"var(--lime)";}
+const CATS=[["prim","Caractéristiques"],["dmg","Dommages"],["res","Résistances"]];
+function setBonus(setId,count){const s=DATA.sets[setId];if(!s||count<2)return[];const ks=Object.keys(s.b).map(Number).filter(k=>k<=count).sort((a,b)=>b-a);return ks.length?s.b[ks[0]]:[];}
+function equippedSets(){const m={};for(const k in build){const it=byId.get(build[k]);if(it&&it.set)m[it.set]=(m[it.set]||0)+1;}return m;}
+function freeSlotFor(cat){const s=SLOTS.find(([key,c])=>c===cat && !build[key]);return s?s[0]:null;}
+function renderSlots(){$("slots").innerHTML=SLOTS.map(([key,cat,label,emo])=>{const it=build[key]?byId.get(build[key]):null;
+  if(it){const setLine=it.set&&DATA.sets[it.set]?'<div class="setdot">◈ '+esc(DATA.sets[it.set].n)+'</div>':'';
+    return '<div class="slot" data-key="'+key+'" data-cat="'+cat+'"><div class="ph">'+emo+'</div><div class="info"><div class="slabel">'+esc(label)+'</div><div class="iname">'+esc(it.n)+'</div>'+setLine+'</div><div class="x" data-remove="'+key+'">✕</div></div>';}
+  return '<div class="slot" data-key="'+key+'" data-cat="'+cat+'"><div class="ph" style="opacity:.5">'+emo+'</div><div class="info"><div class="slabel">'+esc(label)+'</div><div class="iname" style="color:var(--muted)">Vide</div></div></div>';}).join("");}
+function renderPanel(){
+  const contrib={};const add=(name,val,src,isSet)=>{if(!val)return;(contrib[name]=contrib[name]||[]).push([src,val,isSet]);};
+  for(const key in build){const it=byId.get(build[key]);if(!it)continue;for(const e of it.e||[])add(e[0],(e[2]??e[1])||0,it.n,false);}
+  const eq=equippedSets();const activeIds=Object.keys(eq).sort((a,b)=>eq[b]-eq[a]);
+  for(const sid of activeIds){for(const [n,v] of setBonus(sid,eq[sid]))add(n,v,"◈ "+DATA.sets[sid].n,true);}
+  let panoHtml="";
+  for(const sid of activeIds){const count=eq[sid],s=DATA.sets[sid];if(!s)continue;const members=(bySet[sid]||[]);const eqIds=new Set(Object.values(build));const bonus=setBonus(sid,count);
+    const bonusTxt=bonus.length?bonus.map(([n,v])=>(v>0?'+':'')+v+' '+esc(n)).join(', '):'<span style="color:var(--muted)">Bonus à partir de 2 pièces</span>';
+    const memHtml=members.map(it=>{if(eqIds.has(it.id))return '<div class="mem on"><span class="eqmark">✓</span><span class="mn">'+esc(it.n)+'</span><span class="mslot">'+esc(it.s)+'</span></div>';
+      const free=freeSlotFor(it.s);return '<div class="mem"><span class="mn">'+esc(it.n)+'</span><span class="mslot">'+esc(it.s)+'</span>'+(free?'<button class="add" data-add="'+it.id+'">+ Ajouter</button>':'<span class="full">slot occupé</span>')+'</div>';}).join("");
+    panoHtml+='<div class="setcard"><div class="sn">◈ '+esc(s.n)+'</div><div class="sc">'+count+' / '+members.length+' pièces · bonus actif</div><div class="sb">'+bonusTxt+'</div><div class="members">'+memHtml+'</div></div>';}
+  $("panos").innerHTML=activeIds.length?'<h3 class="pano">Panoplies</h3>'+panoHtml+'<div class="divider"></div>':'';
+  const names=Object.keys(contrib),tot={};for(const n of names)tot[n]=contrib[n].reduce((s,c)=>s+c[1],0);
+  if(!names.length){$("totals").innerHTML='<div class="emptot">Équipe des items pour voir tes stats.<br/>Survole une caractéristique pour voir la contribution de chaque item.</div>';$("itemcount").textContent="";return;}
+  let html="";
+  for(const [cat,label] of CATS){const rows=names.filter(n=>category(n)===cat && tot[n]!==0).sort((a,b)=>Math.abs(tot[b])-Math.abs(tot[a]));if(!rows.length)continue;
+    html+='<div class="statgroup"><h3>'+label+'</h3>';
+    for(const n of rows){const v=tot[n],col=elemColor(n)||catColor(cat);const parts=contrib[n].slice().sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+      const bd=parts.map(([src,val,isSet])=>'<div class="bd'+(isSet?' set':'')+'"><span class="bl">'+esc(src)+'</span><span class="bv">'+(val>0?'+':'')+val+'</span></div>').join("");
+      html+='<div class="statwrap"><div class="statrow"><span class="dot" style="background:'+col+'"></span><span class="nm">'+esc(n)+'</span><span class="val '+(v>=0?'pos':'neg')+'">'+(v>0?'+':'')+v+'</span></div><div class="breakdown">'+bd+'</div></div>';}
+    html+='</div>';}
+  // Élément dominant du build -> lien vers la route de farm
+  const elS={t:0,f:0,e:0,a:0};
+  for(const nm in tot){if(tot[nm]<=0)continue;const l=norm(nm);
+    if(l.includes("terre")||l==="force")elS.t+=tot[nm];
+    else if(l.includes("feu")||l==="intelligence")elS.f+=tot[nm];
+    else if(l.includes("eau")||l==="chance")elS.e+=tot[nm];
+    else if(l.includes("air")||l==="agilite")elS.a+=tot[nm];}
+  let domEl=null,domV=0;for(const k in elS)if(elS[k]>domV){domV=elS[k];domEl=k;}
+  const LBL={t:"Terre",f:"Feu",e:"Eau",a:"Air"};
+  if(domEl)html+='<div style="margin-top:16px"><button class="cta" style="width:100%;font-size:13px;padding:12px" data-farmel="'+domEl+'">⚔️ Où farmer avec ce build ('+LBL[domEl]+') →</button></div>';
+  $("totals").innerHTML=html;const ni=Object.keys(build).length;$("itemcount").textContent=ni+" item"+(ni>1?"s":"")+" équipé"+(ni>1?"s":"")+" · survole une stat pour le détail";
+}
+function render(){renderSlots();renderPanel();}
+function addItem(itemId){const it=byId.get(itemId);if(!it)return;const slot=freeSlotFor(it.s);if(!slot)return;build[slot]=itemId;save();render();}
+function openPicker(key,cat){activeSlot=key;$("modaltitle").textContent="Choisir : "+cat;$("search").value="";$("modal").classList.add("open");renderList("");setTimeout(()=>$("search").focus(),50);}
+function renderList(q){const cat=SLOTS.find(s=>s[0]===activeSlot)[1];const nq=norm(q);let pool=(byCat[cat]||[]).filter(i=>i.l<=maxLvl);if(nq)pool=pool.filter(i=>norm(i.n).includes(nq));
+  const total=pool.length;pool=pool.slice(0,80);$("modalcount").textContent=total+" items (niv ≤ "+maxLvl+")"+(total>80?" — affiche les 80 premiers, précise ta recherche":"");
+  $("list").innerHTML=pool.map(it=>{const setLine=it.set&&DATA.sets[it.set]?'<span class="rset">◈ '+esc(DATA.sets[it.set].n)+'</span> · ':'';
+    return '<div class="row" data-pick="'+it.id+'"><div class="ph">'+(slotEmoji[cat]||"◆")+'</div><div style="min-width:0"><div class="rn">'+esc(it.n)+'</div><div class="rm">'+setLine+esc(effSummary(it,3))+'</div></div><div class="lv">Niv '+it.l+'</div></div>';}).join("")||'<div class="emptot">Aucun item.</div>';}
+document.addEventListener("click",e=>{
+  const addb=e.target.closest("[data-add]");if(addb){addItem(Number(addb.getAttribute("data-add")));return;}
+  const rem=e.target.closest("[data-remove]");if(rem){e.stopPropagation();delete build[rem.getAttribute("data-remove")];save();render();return;}
+  const slot=e.target.closest(".slot");if(slot){openPicker(slot.getAttribute("data-key"),slot.getAttribute("data-cat"));return;}
+  const pick=e.target.closest("[data-pick]");if(pick){build[activeSlot]=Number(pick.getAttribute("data-pick"));save();$("modal").classList.remove("open");render();return;}
+  if(e.target.id==="close"||e.target.id==="modal")$("modal").classList.remove("open");});
+$("search").addEventListener("input",e=>renderList(e.target.value));
+$("reset").addEventListener("click",()=>{build={};save();render();});
+function setLvl(v){v=Math.max(1,Math.min(200,v||1));maxLvl=v;$("lvlrange").value=v;$("lvlnum").value=v;if($("modal").classList.contains("open"))renderList($("search").value);}
+$("lvlrange").addEventListener("input",e=>setLvl(Number(e.target.value)));
+$("lvlnum").addEventListener("input",e=>setLvl(Number(e.target.value)));
+render();
+
+/* ===== ROUTES DE FARM ===== */
+const ELEMS=[["f","Feu","var(--feu)"],["e","Eau","var(--eau)"],["t","Terre","var(--terre)"],["a","Air","var(--air)"]];
+const BRACKETS=[["1-20",1,20],["21-40",21,40],["41-60",41,60],["61-80",61,80],["81-110",81,110],["111-130",111,130],["131-160",131,160],["161-180",161,180],["181-199",181,199],["200",200,200]];
+// Route kamas : pistes communautaires (zones réelles), 3 max par palier. Sources en pied de page.
+// La valeur kamas exacte dépend des prix HDV de ton serveur — non fabriquée ici.
+const KAMAS=[
+  [["Souterrains d'Astrub","Astrub","Mobs denses à côté de la banque, idéal pour démarrer"],["Champs / Prairies d'Astrub","Astrub","Classique début : laine, blé, drops simples"],["Coin des Bouftous","Amakna","Laine & cuir de Bouftou, très accessible"]],
+  [["Plaine des Porkass / Dopeuls","Plaines de Cania","Drops variés, mobs nombreux"],["🏆 Donjon des Tofus / Scarafeuilles","Amakna","Donjon rapide en solo + défis = kamas bonus"],["Havre de Nowel","Île de Nowel","Groupes denses (zone événementielle)"]],
+  [["🏆 Château du Wa Wabbit","Île des Wabbits","Drops recherchés, donjon culte"],["🏆 Donjon des Bworks","Amakna","Solo facile, ressources Bwork"],["Bassin des Muldos","Baie de Sufokia","Poils/ressources de monture"]],
+  [["Landes de Sidimote (Magik Riktus)","Landes de Sidimote","Runes & ressources, mobs denses"],["🏆 Terrier du Wa Wabbit","Île des Wabbits","Donjon rentable en boucle"],["Bois des Arak-haï","Forêt des Abraknydes","Bois & ressources bûcheron"]],
+  [["Port de Givre / La Bourgade","Île de Frigost","Début Frigost : groupes denses = rentable"],["🏆 Antre de la Reine Nyée","Forêt des Abraknydes","Boss abra, drops de sets"],["Plantala","Île de Pandala","Ressources métier très demandées"]],
+  [["Forêt des pins perdus / Lac gelé","Île de Frigost","Groupes très denses, spot XP+drop réputé"],["Akwadala / Terrdala / Feudala","Île de Pandala","Ressources élémentaires demandées"],["🏆 Serre du Royalmouth","Île de Frigost","Donjon Frigost accessible"]],
+  [["Village enseveli / Cavernes des Givrefoux","Île de Frigost","Frigost dense, drops de sets recherchés"],["🏆 Hypogée de l'Obsidiantre","Île de Frigost","Boss, ressources fin de Frigost"],["Cité Oubliée / Gorge des Vents Hurlants","Saharach","Mobs Saharach, ressources"]],
+  [["Forêt pétrifiée / Crocs de verre / Mont Torrideau","Île de Frigost","Cœur du farm Frigost 170-180"],["🏆 Antre du Korriandre","Île de Frigost","Donjon rentable en boucle"],["Catacombres","Srambad","Ressources & drops Srambad"]],
+  [["Jardins d'Hiver / Remparts à vent / Bastion des froides légions","Île de Frigost","Spots THL les plus prisés, groupes denses"],["🏆 Cavernes du Kolosso / Antichambre des Gloursons","Île de Frigost","Donjons 190, drops de valeur"],["Pyramide d'Ombre","Dimension Obscure","Drops de la dimension obscure"]],
+  [["🏆 Donjons THL Frigost (Klime, Missiz Frizz, Harebourg)","Île de Frigost","Trophées & drops uniques à haute valeur"],["Profondeurs de Sufokia (Trithons, R'lyugluglu)","Profondeurs de Sufokia","Zones 200 denses, ressources THL"],["Fort Thune / Retraite des Éternels","Enutrosor","Farm THL réputé pour les kamas"]],
+];
+const PRINCIPES=[
+  "Donjons ~30-50 niveaux sous toi, en solo, en validant les défis (kamas bonus).",
+  "Chasses au trésor : kamas directs, rapide et sans stuff.",
+  "Brisage d'objets en runes puis revente (forgemagie).",
+  "Percepteurs posés dans des donjons fréquentés (revenu passif).",
+  "Métiers de récolte haut niveau (Alchimiste / Mineur / Bûcheron 100+) : peu de concurrence, forte demande.",
+  "Boss de donjon : trophées, Dofus et accessoires à haute valeur unitaire.",
+];
+let farmMode="xp", farmElem="f", farmBr=0, openZones=new Set();
+const elemColorMap={t:"var(--terre)",f:"var(--feu)",e:"var(--eau)",a:"var(--air)"};
+const elemLabel={t:"Terre",f:"Feu",e:"Eau",a:"Air"};
+function renderFarmControls(){
+  $("modesel").innerHTML='<button class="bp'+(farmMode==="xp"?' active':'')+'" data-mode="xp">⚔️ XP par élément</button><button class="bp'+(farmMode==="kamas"?' active':'')+'" data-mode="kamas">💰 Kamas</button>';
+  $("elemsel").style.display=farmMode==="xp"?"flex":"none";
+  $("elemsel").innerHTML=ELEMS.map(([k,lbl,col])=>'<button class="ep'+(farmElem===k?' active':'')+'" data-elem="'+k+'"><span class="sw" style="background:'+col+'"></span>'+lbl+'</button>').join("");
+  $("brsel").innerHTML=BRACKETS.map((b,i)=>'<button class="bp'+(farmBr===i?' active':'')+'" data-br="'+i+'">'+b[0]+'</button>').join("");
+}
+function rchip(k,val,sel){const col=elemColorMap[k];return '<div class="rchip'+(sel?' sel':'')+'" style="color:'+col+'"><small>'+elemLabel[k]+'</small>'+(val>0?'+':'')+val+'</div>';}
+function renderFarm(){
+  renderFarmControls();
+  if(farmMode==="kamas")return renderKamas();
+  $("farmnote").innerHTML='Résistance <b>basse ou négative</b> dans ton élément = plus de dégâts = kills plus rapides. <b>Top 3 zones</b> du palier ; clique une zone pour voir chaque monstre.';
+  $("farmfoot").textContent="Bestiaire & zones : DofusDB (3.6). Résistances = moyenne des monstres de la zone (grade max).";
+  const [lbl,lo,hi]=BRACKETS[farmBr];
+  let zones=FARM.zones.filter(z=>z.lvl>=lo&&z.lvl<=hi).slice().sort((a,b)=>a.res[farmElem]-b.res[farmElem]).slice(0,3);
+  const box=$("farm-content");
+  if(!zones.length){box.innerHTML='<div class="empty">Aucune zone répertoriée dans ce palier.</div>';return;}
+  let html="";
+  zones.forEach((z,i)=>{
+    const chips=["t","f","e","a"].map(k=>rchip(k,z.res[k],k===farmElem)).join("");
+    const open=openZones.has(z.id);
+    const mons=z.mons.slice().sort((a,b)=>a.r[farmElem]-b.r[farmElem]).map(m=>
+      '<div class="zmon"><span class="zmn">'+esc(m.n)+'</span><span class="zml">niv '+m.l+'</span><span class="zmr" style="color:'+elemColorMap[farmElem]+'">'+(m.r[farmElem]>0?'+':'')+m.r[farmElem]+' rés</span><span class="zmx">'+m.x+' xp</span></div>').join("");
+    html+='<div class="zone'+(open?' open':'')+'"><div class="zhead" data-zone="'+z.id+'"><div class="zrank">'+(i+1)+'</div>'
+      +'<div class="zmain"><div class="zname">'+esc(z.n)+'</div><div class="zmeta">Niv '+z.lvl+' · '+z.cnt+' monstres · ~'+z.xp+' xp/monstre</div></div>'
+      +'<div class="zres">'+chips+'</div></div><div class="zmons">'+mons+'</div></div>';
+  });
+  box.innerHTML=html;
+}
+function renderKamas(){
+  $("farmnote").innerHTML='💰 <b>Pistes communautaires</b> (zones réelles), 3 par palier. La valeur kamas exacte dépend des prix HDV de ton serveur : utilise <a href="https://geneka.net/drops" target="_blank" rel="noopener" style="color:var(--lime-bright)">geneka.net/drops</a> pour un kamas/h calibré.';
+  $("farmfoot").innerHTML='Sources : <a href="https://n-gamz.com/2025/04/dofus-kamas-guide-les-meilleures-strategies-pour-devenir-riche-dans-dofus-3-0/" target="_blank" rel="noopener" style="color:var(--muted)">N-Gamz</a>, <a href="https://mmokb.com/dofus-kamas-farming-guide/" target="_blank" rel="noopener" style="color:var(--muted)">MMOKB</a>, <a href="https://geneka.net/drops" target="_blank" rel="noopener" style="color:var(--muted)">geneka.net</a>. Zones : DofusDB.';
+  const spots=KAMAS[farmBr]||[];
+  let html='<div style="display:flex;flex-direction:column;gap:10px">';
+  spots.forEach((s,i)=>{html+='<div class="zone"><div class="zhead" style="cursor:default"><div class="zrank">'+(i+1)+'</div>'
+    +'<div class="zmain"><div class="zname">'+esc(s[0])+'</div><div class="zmeta">'+esc(s[1])+' — '+esc(s[2])+'</div></div></div></div>';});
+  html+='</div>';
+  html+='<h2 style="font-size:16px;margin-top:24px">Principes qui marchent à tous les niveaux</h2>';
+  html+='<div class="empty" style="text-align:left;padding:16px 18px"><ul style="margin:0;padding-left:18px;line-height:1.8;color:#ddd8cf">'+PRINCIPES.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul></div>';
+  $("farm-content").innerHTML=html;
+}
+window.__goFarmElement=function(el){farmMode="xp";farmElem=el;go("farm");renderFarm();};
+document.addEventListener("click",e=>{
+  const fe=e.target.closest("[data-farmel]");if(fe){window.__goFarmElement(fe.getAttribute("data-farmel"));return;}
+  const mp=e.target.closest("[data-mode]");if(mp){farmMode=mp.getAttribute("data-mode");renderFarm();return;}
+  const ep=e.target.closest("[data-elem]");if(ep){farmElem=ep.getAttribute("data-elem");renderFarm();return;}
+  const bp=e.target.closest("[data-br]");if(bp){farmBr=Number(bp.getAttribute("data-br"));renderFarm();return;}
+  const zh=e.target.closest("[data-zone]");if(zh){const id=Number(zh.getAttribute("data-zone"));openZones.has(id)?openZones.delete(id):openZones.add(id);renderFarm();return;}
+});
+renderFarm();
+
+/* ===== FINITIONS MOTION ===== */
+const _reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+// parallax léger des halos de fond
+if(!_reduce){
+  const _amb=[].slice.call(document.querySelectorAll('.ambient span'));
+  window.addEventListener('mousemove',function(e){
+    const x=e.clientX/window.innerWidth-.5, y=e.clientY/window.innerHeight-.5;
+    _amb.forEach(function(s,i){const d=(i+1)*12;s.style.marginLeft=(x*d).toFixed(1)+'px';s.style.marginTop=(y*d).toFixed(1)+'px';});
+  });
+}
+// comptage animé des chiffres d'accueil
+function _countUp(el){const t=parseInt(el.textContent,10);if(isNaN(t))return;if(_reduce)return;let s=null;const dur=850;el.textContent='0';
+  function step(ts){if(!s)s=ts;const p=Math.min(1,(ts-s)/dur);el.textContent=Math.round(t*(0.5-Math.cos(p*Math.PI)/2));if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);}
+document.querySelectorAll('#home-content .stat .num').forEach(_countUp);
+</script>
+</body>
+</html>
