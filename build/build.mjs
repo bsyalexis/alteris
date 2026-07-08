@@ -13,12 +13,15 @@ const [tpl, font, diff, picker, zones, svg] = await Promise.all([
   rd("assets/alteris-icon.svg"),
 ]);
 const appleB64 = (await readFile("assets/apple-touch-icon.png")).toString("base64");
+const version = JSON.parse(await rd("data/version.json")).version || "";
+const buildInfo = JSON.stringify({ builtAt: new Date().toISOString(), version });
 
 const reps = [
   ["/*FONT_B64*/", font.trim()],
   ['/*DIFF_DATA*/{}/*END_DIFF*/', diff],
   ['/*PICKER_DATA*/{version:"",items:[],sets:{}}/*END_PICKER*/', picker],
   ['/*ZONES_DATA*/{version:"",zones:[]}/*END_ZONES*/', zones],
+  ['/*BUILD_INFO*/{"builtAt":"","version":""}/*END_BUILD*/', buildInfo],
 ];
 let html = tpl;
 for (const [m, v] of reps) {

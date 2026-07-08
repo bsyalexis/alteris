@@ -154,6 +154,9 @@
   .row .lv{margin-left:auto;font-size:11px;color:var(--gold);font-weight:800;flex-shrink:0}
   .count{font-size:11px;color:var(--muted);margin-bottom:8px}
   footer{text-align:center;margin-top:40px;color:var(--muted);font-size:11px;line-height:1.7}
+  .lastupdate{text-align:center;margin:36px auto 0;padding:14px 16px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);max-width:600px}
+  .lastupdate b{color:var(--lime-bright)}
+  .lastupdate .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lime-bright);margin-right:7px;vertical-align:middle;box-shadow:0 0 8px var(--lime-bright);animation:epGlow 2.6s ease-in-out infinite}
   /* ===== MOTION & POLISH (2026) ===== */
   .ambient{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
   .ambient span{position:absolute;border-radius:50%;filter:blur(46px);opacity:.20;background:radial-gradient(circle,#9be24a,transparent 70%);will-change:transform}
@@ -271,6 +274,7 @@
     <div id="farm-content"></div>
     <footer id="farmfoot"></footer>
   </div>
+  <div class="lastupdate" id="lastupdate"></div>
 </div>
 
 <div class="modal" id="modal"><div class="modbox">
@@ -284,6 +288,7 @@
 const DIFF = /*DIFF_DATA*/{}/*END_DIFF*/;
 const DATA = /*PICKER_DATA*/{version:"",items:[],sets:{}}/*END_PICKER*/;
 const FARM = /*ZONES_DATA*/{version:"",zones:[]}/*END_ZONES*/;
+const BUILD = /*BUILD_INFO*/{"builtAt":"","version":""}/*END_BUILD*/;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 
@@ -489,6 +494,18 @@ function _countUp(el){const t=parseInt(el.textContent,10);if(isNaN(t))return;if(
   function step(ts){if(!s)s=ts;const p=Math.min(1,(ts-s)/dur);el.textContent=Math.round(t*(0.5-Math.cos(p*Math.PI)/2));if(p<1)requestAnimationFrame(step);}
   requestAnimationFrame(step);}
 document.querySelectorAll('#home-content .stat .num').forEach(_countUp);
+
+// pied de page : dernière mise à jour (injectée au build)
+(function(){
+  const el=document.getElementById('lastupdate'); if(!el) return;
+  if(BUILD && BUILD.builtAt){
+    const d=new Date(BUILD.builtAt);
+    const f=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}).format(d);
+    el.innerHTML='<span class="dot"></span>Dernière mise à jour : <b>'+f+'</b> (heure de Paris)'+(BUILD.version?' · données Dofus '+BUILD.version:'');
+  } else {
+    el.innerHTML='<span class="dot"></span>Mise à jour automatique quotidienne';
+  }
+})();
 </script>
 </body>
 </html>
