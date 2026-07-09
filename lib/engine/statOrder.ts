@@ -89,9 +89,16 @@ export function statGroup(name: string): StatGroup {
 
 const BIG = 10_000;
 
-/** Rang de tri à l'intérieur de son groupe (inconnu -> après, ordre alpha géré par l'appelant) */
+/**
+ * Rang de tri global : stats principales d'abord (dans leur ordre canonique),
+ * puis secondaires (décalées de +1000), puis inconnues (après tout).
+ */
 export function statRank(name: string): number {
-  return MAIN_RANK.get(name) ?? SECONDARY_RANK.get(name) ?? BIG;
+  const main = MAIN_RANK.get(name);
+  if (main !== undefined) return main;
+  const secondary = SECONDARY_RANK.get(name);
+  if (secondary !== undefined) return 1000 + secondary;
+  return BIG;
 }
 
 export interface GroupedStats {

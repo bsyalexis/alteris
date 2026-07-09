@@ -83,12 +83,12 @@ export default function HomePage() {
         <div className="vbar">
           <div className="pill">
             {diff.from.v}
-            <small>{diff.from.r} (live)</small>
+            <small>{diff.from.r}</small>
           </div>
           <div className="arrow">➜</div>
           <div className="pill beta">
             {diff.to.v}
-            <small>{diff.to.r} (à venir)</small>
+            <small>{diff.to.r}</small>
           </div>
         </div>
         <Link href="/simulateur" className="cta">
