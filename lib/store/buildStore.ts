@@ -22,6 +22,8 @@ interface BuildState {
   setLevel: (level: number) => void;
   /** équipe un item dans le slot actif s'il correspond, sinon premier slot libre de sa catégorie */
   equip: (itemId: number, category: SlotCategory) => void;
+  /** équipe un item dans un slot précis (flux modal) */
+  equipInSlot: (slot: SlotKey, itemId: number) => void;
   remove: (slot: SlotKey) => void;
   reset: () => void;
   selectSlot: (slot: SlotKey) => void;
@@ -54,6 +56,9 @@ export const useBuildStore = create<BuildState>((set, get) => ({
     // avance le slot actif vers le prochain libre de la catégorie
     set({ items: next, activeSlot: freeSlotFor(category, next) ?? target });
   },
+
+  equipInSlot: (slot, itemId) =>
+    set((state) => ({ items: { ...state.items, [slot]: itemId } })),
 
   remove: (slot) => {
     const items = { ...get().items };

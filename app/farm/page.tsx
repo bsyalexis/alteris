@@ -9,10 +9,17 @@ export const metadata: Metadata = {
 
 export default function FarmPage() {
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="mb-4 text-2xl font-extrabold">
-        Routes de <span className="text-[var(--lime-bright)]">farm</span>
-      </h1>
+    <div className="view-anim">
+      <header>
+        <h1>
+          Routes de <span className="accent">farm</span>
+        </h1>
+        <p className="tagline">
+          Choisis ta voie élémentaire et ton palier : voici les zones où les monstres
+          résistent le moins à ton élément — donc où tu tapes le plus fort et farm le plus
+          vite.
+        </p>
+      </header>
       <FarmExplorer />
     </div>
   );

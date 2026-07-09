@@ -1,61 +1,64 @@
 "use client";
 
 import { SLOTS } from "@/lib/engine";
-import type { GameDataIndex } from "@/lib/engine";
+import type { GameDataIndex, SlotKey } from "@/lib/engine";
 import { itemImageUrl } from "@/lib/data/useGameData";
 import { useBuildStore } from "@/lib/store/buildStore";
 
-export function SlotGrid({ index }: { index: GameDataIndex }) {
+/** Grille des 16 slots — markup du site d'origine (.slots/.slot/.ph/.info/.x) */
+export function SlotGrid({
+  index,
+  onPick,
+}: {
+  index: GameDataIndex;
+  onPick: (slot: SlotKey) => void;
+}) {
   const items = useBuildStore((s) => s.items);
-  const activeSlot = useBuildStore((s) => s.activeSlot);
-  const selectSlot = useBuildStore((s) => s.selectSlot);
   const remove = useBuildStore((s) => s.remove);
 
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
+    <div className="slots">
       {SLOTS.map((slot) => {
         const id = items[slot.key];
         const item = id != null ? index.byId.get(id) : undefined;
-        const active = slot.key === activeSlot;
         const setName =
-          item?.set != null ? index.sets[String(item.set)]?.n : undefined;
+          item?.set != null && item.set !== 0 ? index.sets[String(item.set)]?.n : undefined;
         const img = itemImageUrl(item?.img);
         return (
-          <button
+          <div
             key={slot.key}
-            type="button"
-            onClick={() => selectSlot(slot.key)}
-            className={`panel flex min-h-[64px] items-center gap-2.5 p-2.5 text-left transition-transform hover:-translate-y-0.5 ${
-              active ? "border-[var(--lime)] shadow-[inset_0_0_0_1px_var(--lime)]" : ""
-            }`}
+            className="slot"
+            onClick={() => onPick(slot.key)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") onPick(slot.key);
+            }}
           >
-            <span className="slot-ph flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--line)] text-xl">
+            <div className="ph" style={item ? undefined : { opacity: 0.5 }}>
               {item && img ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={img} alt="" className="h-9 w-9" loading="lazy" />
+                <img src={img} alt="" width={38} height={38} loading="lazy" />
               ) : (
-                <span className={item ? "" : "opacity-50"}>{slot.emoji}</span>
+                slot.emoji
               )}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-                {slot.label}
-              </span>
+            </div>
+            <div className="info">
+              <div className="slabel">{slot.label}</div>
               {item ? (
                 <>
-                  <span className="block truncate text-[13px] font-bold">{item.n}</span>
-                  {setName && (
-                    <span className="block truncate text-[10px] font-bold text-[var(--violet)]">
-                      ◈ {setName}
-                    </span>
-                  )}
+                  <div className="iname">{item.n}</div>
+                  {setName && <div className="setdot">◈ {setName}</div>}
                 </>
               ) : (
-                <span className="block text-[13px] text-[var(--muted)]">Vide</span>
+                <div className="iname" style={{ color: "var(--muted)" }}>
+                  Vide
+                </div>
               )}
-            </span>
+            </div>
             {item && (
-              <span
+              <div
+                className="x"
                 role="button"
                 tabIndex={0}
                 aria-label={`Retirer ${item.n}`}
@@ -69,12 +72,11 @@ export function SlotGrid({ index }: { index: GameDataIndex }) {
                     remove(slot.key);
                   }
                 }}
-                className="px-1 text-lg text-[var(--muted)] hover:text-[var(--red)]"
               >
                 ✕
-              </span>
+              </div>
             )}
-          </button>
+          </div>
         );
       })}
     </div>

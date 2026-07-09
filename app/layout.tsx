@@ -1,34 +1,61 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import versionJson from "@/data/version.json";
+import { BrandIcon } from "@/components/BrandIcon";
 import { NavTabs } from "@/components/NavTabs";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Altéris — Outil pour Dofus",
   description:
-    "Compose ton build Dofus, vois tes stats en temps réel, compare et partage. Impact des patchs, routes de farm.",
+    "Impact des patchs Dofus item par item, simulateur de build avec panoplies, routes de farm par élément.",
 };
+
+const gameVersion = (versionJson as { version: string }).version;
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const builtAt = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  }).format(new Date());
+
   return (
     <html lang="fr">
-      <body className="min-h-screen antialiased">
-        <nav className="nav">
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3.5 px-4 py-2.5">
+      <body>
+        <div className="ambient">
+          <span></span>
+          <span></span>
+          <span></span>
+          <i className="leaf"></i>
+          <i className="leaf"></i>
+          <i className="leaf"></i>
+          <i className="leaf"></i>
+          <i className="leaf"></i>
+          <i className="leaf"></i>
+        </div>
+        <div className="nav">
+          <div className="navin">
             <Link href="/" className="brand">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/alteris-icon.svg" alt="" width={20} height={20} />
+              <BrandIcon />
               Altéris
             </Link>
             <NavTabs />
           </div>
-        </nav>
-        <main className="mx-auto max-w-5xl px-4 pb-16 pt-6">{children}</main>
-        <footer className="mx-auto max-w-5xl px-4 pb-8 text-center text-xs text-[var(--muted)]">
-          Données : dofusdude & DofusDB (APIs communautaires, non affiliées à Ankama) · Dofus™ Ankama.
-        </footer>
+        </div>
+        <div className="wrap">
+          {children}
+          <div className="lastupdate">
+            <span className="dot"></span>Dernière mise à jour : <b>{builtAt}</b> (heure de
+            Paris) · données Dofus <b>{gameVersion}</b>
+          </div>
+        </div>
       </body>
     </html>
   );

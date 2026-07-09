@@ -1,73 +1,204 @@
 import Link from "next/link";
 import diffJson from "@/data/diff.json";
-import versionJson from "@/data/version.json";
-import type { PatchDiff } from "@/lib/data/patch";
+import { CountUp } from "@/components/CountUp";
+import { bucketChanges } from "@/lib/data/patch";
+import type { PatchChangedItem, PatchDiff } from "@/lib/data/patch";
 
 const diff = diffJson as unknown as PatchDiff;
-const gameVersion = (versionJson as { version: string }).version;
 
-const SECTIONS = [
+function Arrow({ from, to }: { from: number; to: number }) {
+  if (to > from) return <span className="up">↑ +{to - from}</span>;
+  if (to < from) return <span className="down">↓ {to - from}</span>;
+  return <>=</>;
+}
+
+function ChangeRow({ change, kind }: { change: PatchChangedItem; kind: "up" | "down" }) {
+  return (
+    <div className={`change ${kind}`}>
+      {change.dataUri && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={change.dataUri} alt="" style={{ width: 40, height: 40 }} />
+      )}
+      <div>
+        <div className="nm">{change.name}</div>
+        {(change.mods ?? []).map((mod, i) => (
+          <div key={i} className="eff">
+            {mod.name} : {mod.minF}–{mod.maxF} →{" "}
+            <strong>
+              {mod.minT}–{mod.maxT}
+            </strong>{" "}
+            (<Arrow from={mod.minF} to={mod.minT} /> /{" "}
+            <Arrow from={mod.maxF} to={mod.maxT} />)
+          </div>
+        ))}
+        {(change.addE ?? []).map((e, i) => (
+          <div key={`a${i}`} className="eff">
+            <span className="up">+ {e.formatted ?? e.name}</span> (nouvel effet)
+          </div>
+        ))}
+        {(change.remE ?? []).map((e, i) => (
+          <div key={`r${i}`} className="eff">
+            <span className="down">− {e.formatted ?? e.name}</span> (retiré)
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const SYNTH: { item: PatchChangedItem; kind: "up" | "down" }[] = [
   {
-    href: "/simulateur",
-    emoji: "⚔️",
-    title: "Simulateur de build",
-    text: "Assemble ton stuff, bonus de panoplie inclus. Compare deux builds, génère un build par caractéristiques, partage en un lien.",
+    kind: "up",
+    item: {
+      name: "Item exemple A",
+      mods: [
+        { name: "Force", minF: 20, minT: 35, maxF: 40, maxT: 60 },
+        { name: "Vitalité", minF: 50, minT: 80, maxF: 50, maxT: 80 },
+      ],
+    },
   },
   {
-    href: "/patchs",
-    emoji: "📋",
-    title: "Impact des patchs",
-    text: `${diff.summary.added} nouveaux items entre ${diff.from.v} et ${diff.to.v}. Ce qui monte, ce qui baisse, et si ton build tient toujours.`,
-  },
-  {
-    href: "/farm",
-    emoji: "🗺️",
-    title: "Routes de farm",
-    text: "Où XP selon ton élément, où trouver chaque famille de monstres, pistes kamas par palier.",
+    kind: "down",
+    item: {
+      name: "Item exemple B",
+      mods: [{ name: "Puissance", minF: 15, minT: 8, maxF: 30, maxT: 15 }],
+      remE: [{ name: "20 Sagesse" }],
+    },
   },
 ];
 
 export default function HomePage() {
+  const { up, down } = bucketChanges(diff.changed ?? []);
+
   return (
-    <div className="py-6 text-center">
-      <h1 className="text-[38px]">
-        Altéris<span className="accent">.</span>
-      </h1>
-      <p className="mx-auto mt-2 max-w-[620px] text-[15px] leading-relaxed text-[var(--muted)]">
-        Le seul outil Dofus qui suit le temps : qu&apos;est-ce que je gagne, qu&apos;est-ce
-        que je perds, et est-ce que ça vaut encore le coup après le patch.
-      </p>
-
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <div className="pill">
-          {diff.from.v}
-          <small>{diff.from.r} (live)</small>
+    <div className="view-anim">
+      <header>
+        <h1>
+          Impact des <span className="accent">patchs</span>
+        </h1>
+        <p className="tagline">
+          Le seul simulateur qui suit le temps : ce qui change entre deux versions du jeu,
+          item par item.
+        </p>
+        <div className="vbar">
+          <div className="pill">
+            {diff.from.v}
+            <small>{diff.from.r} (live)</small>
+          </div>
+          <div className="arrow">➜</div>
+          <div className="pill beta">
+            {diff.to.v}
+            <small>{diff.to.r} (à venir)</small>
+          </div>
         </div>
-        <span className="text-[22px] font-extrabold text-[var(--lime-bright)]">➜</span>
-        <div className="pill beta">
-          {diff.to.v}
-          <small>{diff.to.r}</small>
+        <Link href="/simulateur" className="cta">
+          ⚔️ Ouvrir le simulateur →
+        </Link>
+      </header>
+
+      <div className="stats">
+        <div className="stat added">
+          <div className="num">
+            <CountUp value={diff.summary.added} />
+          </div>
+          <div className="lbl">Nouveaux items</div>
+        </div>
+        <div className="stat up">
+          <div className="num">
+            <CountUp value={up.length} />
+          </div>
+          <div className="lbl">Items renforcés</div>
+        </div>
+        <div className="stat down">
+          <div className="num">
+            <CountUp value={down.length} />
+          </div>
+          <div className="lbl">Items affaiblis</div>
+        </div>
+        <div className="stat rem">
+          <div className="num">
+            <CountUp value={diff.summary.removed} />
+          </div>
+          <div className="lbl">Items retirés</div>
         </div>
       </div>
 
-      <Link href="/simulateur" className="cta mt-5">
-        ⚔️ Ouvrir le simulateur →
-      </Link>
+      <section>
+        <h2>
+          ▲ Items renforcés <span className="badge lime">{up.length}</span>
+        </h2>
+        {up.length ? (
+          up.map((c, i) => <ChangeRow key={i} change={c} kind="up" />)
+        ) : (
+          <div className="empty">Aucun item renforcé dans ce patch.</div>
+        )}
+      </section>
 
-      <p className="mt-4 text-xs text-[var(--muted)]">
-        Dofus <b className="text-white">{gameVersion}</b> · données mises à jour
-        quotidiennement
-      </p>
+      <section>
+        <h2>
+          ▼ Items affaiblis <span className="badge red">{down.length}</span>
+        </h2>
+        {down.length ? (
+          down.map((c, i) => <ChangeRow key={i} change={c} kind="down" />)
+        ) : (
+          <div className="empty">Aucun item affaibli dans ce patch.</div>
+        )}
+      </section>
 
-      <div className="mx-auto mt-10 grid max-w-4xl gap-3 text-left sm:grid-cols-3">
-        {SECTIONS.map((s) => (
-          <Link key={s.href} href={s.href} className="panel card-hover p-5">
-            <div className="text-2xl">{s.emoji}</div>
-            <div className="font-title mt-2 text-[17px]">{s.title}</div>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--muted)]">{s.text}</p>
-          </Link>
-        ))}
-      </div>
+      {(diff.summary.changed ?? 0) === 0 && (
+        <>
+          <div className="empty" style={{ marginTop: 6 }}>
+            <strong>Ce patch (beta {diff.to.v}) ne rééquilibre aucun item.</strong>
+            <br />
+            Tous les patchs ne touchent pas les stats — ici, surtout de nouveaux items.
+          </div>
+          <details className="synth">
+            <summary>
+              ▸ Voir à quoi ressemble le rendu buff / nerf (exemple synthétique)
+            </summary>
+            <div className="inner">
+              <div className="note">
+                ⚠️ Données inventées à titre d&apos;illustration — pas un vrai patch.
+              </div>
+              {SYNTH.map((s, i) => (
+                <ChangeRow key={i} change={s.item} kind={s.kind} />
+              ))}
+            </div>
+          </details>
+        </>
+      )}
+
+      <section>
+        <h2>
+          ✦ Nouveaux items <span className="badge gold">{diff.summary.added}</span>
+        </h2>
+        {diff.added.length ? (
+          <div className="grid">
+            {diff.added.map((item, i) => (
+              <div key={i} className="card">
+                {item.dataUri && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.dataUri} alt="" />
+                )}
+                <div style={{ minWidth: 0 }}>
+                  <div className="nm">{item.name}</div>
+                  <div className="meta">
+                    {item.type ?? "Objet"}
+                    {item.level ? ` · Niv ${item.level}` : ""}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty">Aucun nouvel item.</div>
+        )}
+      </section>
+
+      <footer>
+        Données : dofusdude & DofusDB (APIs communautaires, non affiliées à Ankama) ·
+        Dofus™ Ankama.
+      </footer>
     </div>
   );
 }

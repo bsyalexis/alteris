@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { decodeBuild, encodeBuild, MAX_LEVEL, MIN_LEVEL, SLOTS } from "@/lib/engine";
+import type { SlotKey } from "@/lib/engine";
 import { useGameData } from "@/lib/data/useGameData";
 import { useBuildStore } from "@/lib/store/buildStore";
-import { ItemBrowser } from "./ItemBrowser";
+import { ItemPickerModal } from "./ItemPickerModal";
 import { SlotGrid } from "./SlotGrid";
 import { StatsPanel } from "./StatsPanel";
-import { SuggestPanel } from "./SuggestPanel";
+import { SuggestModal } from "./SuggestPanel";
 
 function storageKey(version: string) {
   return `alteris_build_${version}`;
@@ -26,6 +27,8 @@ export function BuildSimulator() {
   const load = useBuildStore((s) => s.load);
 
   const hydrated = useRef(false);
+  const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -35,7 +38,7 @@ export function BuildSimulator() {
     toastTimer.current = setTimeout(() => setToast(null), 1800);
   }, []);
 
-  // Hydratation : URL (#b=) prioritaire, sinon localStorage — une seule fois, données prêtes
+  // Hydratation : URL (#b=) prioritaire, sinon localStorage — une seule fois
   useEffect(() => {
     if (!index || hydrated.current) return;
     hydrated.current = true;
@@ -63,7 +66,7 @@ export function BuildSimulator() {
     if (next || ref) load(next?.items ?? {}, next?.level ?? MAX_LEVEL, ref?.items ?? null);
   }, [index, load]);
 
-  // Persistance localStorage à chaque changement
+  // Persistance localStorage
   useEffect(() => {
     if (!index || !hydrated.current) return;
     try {
@@ -97,9 +100,8 @@ export function BuildSimulator() {
 
   const shareUrl = useCallback(() => {
     const code = encodeBuild({ level, items });
-    const url = `${window.location.origin}${window.location.pathname}#b=${code}`;
     window.history.replaceState(null, "", `#b=${code}`);
-    return url;
+    return `${window.location.origin}${window.location.pathname}#b=${code}`;
   }, [items, level]);
 
   const discordText = useCallback(() => {
@@ -115,63 +117,51 @@ export function BuildSimulator() {
   }, [index, items, shareUrl]);
 
   if (error) {
-    return (
-      <div className="panel p-8 text-center text-[var(--red)]">
-        Impossible de charger les données du jeu : {error}
-      </div>
-    );
+    return <div className="empty">Impossible de charger les données du jeu : {error}</div>;
   }
   if (!index) {
-    return (
-      <div className="panel p-8 text-center text-[var(--muted)]">
-        Chargement des items…
-      </div>
-    );
+    return <div className="empty">Chargement des items…</div>;
   }
 
-  const equippedCount = Object.keys(items).length;
+  const clampLevel = (v: number) => Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, v || MAX_LEVEL));
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <h1 className="mr-auto text-2xl font-extrabold">
-          Simulateur de <span className="text-[var(--lime-bright)]">build</span>
+    <div className="view-anim">
+      <header>
+        <h1>
+          Simulateur de <span className="accent">build</span>
         </h1>
-        <div className="flex min-w-[260px] flex-1 items-center gap-2.5 sm:max-w-md">
-          <label htmlFor="lvlrange" className="text-sm text-[var(--muted)]">
-            Niv&nbsp;max
-          </label>
+        <p className="tagline">
+          Assemble ton stuff, bonus de panoplie inclus. Survole une stat pour voir qui
+          apporte quoi.
+        </p>
+      </header>
+
+      <div className="toolbar">
+        <div className="lvlwrap">
+          <label htmlFor="lvlrange">Niv max</label>
           <input
             id="lvlrange"
             type="range"
             min={MIN_LEVEL}
             max={MAX_LEVEL}
-            step={1}
-            list="lvlticks"
             value={level}
             onChange={(e) => setLevel(Number(e.target.value))}
-            className="min-w-0 flex-1 accent-[var(--lime)]"
           />
-          <datalist id="lvlticks">
-            {Array.from({ length: 10 }, (_, i) => (i + 1) * 20).map((v) => (
-              <option key={v} value={v} />
-            ))}
-          </datalist>
           <input
+            id="lvlnum"
             type="number"
             min={MIN_LEVEL}
             max={MAX_LEVEL}
             value={level}
-            onChange={(e) =>
-              setLevel(
-                Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, Number(e.target.value) || MAX_LEVEL)),
-              )
-            }
-            className="w-16 rounded-lg border-2 border-[var(--line)] bg-[var(--panel2)] px-1.5 py-1.5 text-center font-extrabold text-white focus:border-[var(--lime)] focus:outline-none"
+            onChange={(e) => setLevel(clampLevel(Number(e.target.value)))}
           />
         </div>
+        <button type="button" className="btn" onClick={() => setSuggestOpen(true)}>
+          ⚙ Suggérer
+        </button>
         <button type="button" className="btn" onClick={() => copy(shareUrl(), "Lien copié !")}>
-          🔗 Copier le lien
+          🔗 Lien
         </button>
         <button
           type="button"
@@ -188,21 +178,42 @@ export function BuildSimulator() {
             showToast("Build vidé");
           }}
         >
-          ✕ Reset
+          Tout retirer
         </button>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
-        <div className="min-w-0 space-y-5">
-          <SuggestPanel index={index} onSuggested={showToast} />
-          <SlotGrid index={index} />
-          <ItemBrowser index={index} />
-        </div>
-        <StatsPanel index={index} equippedCount={equippedCount} />
+      <div className="layout">
+        <SlotGrid index={index} onPick={setPickerSlot} />
+        <StatsPanel index={index} equippedCount={Object.keys(items).length} />
       </div>
 
+      {pickerSlot && (
+        <ItemPickerModal index={index} slot={pickerSlot} onClose={() => setPickerSlot(null)} />
+      )}
+      {suggestOpen && (
+        <SuggestModal
+          index={index}
+          onClose={() => setSuggestOpen(false)}
+          onSuggested={showToast}
+        />
+      )}
+
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-[var(--lime)] bg-[var(--panel2)] px-4 py-2 text-sm font-semibold">
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 50,
+            background: "var(--panel2)",
+            border: "2px solid var(--lime)",
+            borderRadius: 10,
+            padding: "8px 16px",
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
           {toast}
         </div>
       )}
