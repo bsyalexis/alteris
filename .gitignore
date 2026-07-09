@@ -1,5 +1,11 @@
 node_modules/
-.vercel/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
 .DS_Store
-*.log
-npm-debug.log*
+.vercel/
+# générés par scripts/sync-data.mjs (prebuild) depuis data/
+public/data/
+data/*.backup.json
