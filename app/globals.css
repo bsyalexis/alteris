@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
+/* ===== Identité visuelle Altéris (reprise du site d'origine) ===== */
+
+@font-face {
+  font-family: "Titan One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/titan-one.woff2") format("woff2");
+}
+
 :root {
+  color-scheme: dark;
   --dark: #29272a;
   --dark2: #1d1c1a;
   --panel: #343135;
@@ -10,55 +21,248 @@
   --white: #ffffff;
   --lime: #90b83e;
   --lime-bright: #a9d651;
+  --lime-shadow: #6f9130;
   --gold: #f2b01e;
   --red: #e8514b;
   --violet: #b98cf0;
-  --neutre: #a7a39a;
-  --terre: #c98d4b;
-  --feu: #e8514b;
-  --eau: #5aa8d6;
-  --air: #90b83e;
+  --neutre: #d9d4c8;
+  --terre: #8fae3e;
+  --feu: #e8743b;
+  --eau: #3d97e8;
+  --air: #5cc9c0;
+  --title: "Titan One", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
 body {
-  background: var(--dark);
+  font-family: var(--body);
+  background: radial-gradient(1100px 700px at 50% -12%, #38343e 0%, var(--dark) 42%, var(--dark2) 100%);
+  background-attachment: fixed;
   color: var(--white);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
 }
 
-.panel {
+h1, h2 {
+  font-family: var(--title);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+h1 {
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.accent {
+  color: var(--lime-bright);
+}
+.font-title {
+  font-family: var(--title);
+  font-weight: 400;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #211f22ee;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel2);
+  color: var(--white);
+  border: 2px solid var(--lime);
+  font-family: var(--title);
+  font-size: 16px;
+  padding: 5px 13px 5px 10px;
+  border-radius: 11px;
+  box-shadow: 0 3px 0 var(--lime-shadow);
+  letter-spacing: 0.5px;
+}
+.brand img {
+  filter: drop-shadow(0 0 4px #8fd13f88);
+}
+.tab {
+  color: var(--muted);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.12s;
+}
+.tab:hover {
+  color: var(--white);
+}
+.tab.active {
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  color: var(--lime-bright);
+  border-color: var(--line);
 }
 
+/* Boutons */
+.cta {
+  display: inline-block;
+  background: var(--lime);
+  color: var(--dark);
+  font-family: var(--title);
+  font-size: 15px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--lime-shadow), 0 8px 18px rgba(0, 0, 0, 0.4);
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.cta:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--lime-shadow);
+}
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--panel2);
-  border: 1px solid var(--line);
   color: var(--white);
+  border: 2px solid var(--line);
   border-radius: 9px;
   padding: 7px 12px;
-  font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 12px;
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
 }
 .btn:hover {
   border-color: var(--lime);
-  color: var(--lime-bright);
 }
 .btn.danger:hover {
   border-color: var(--red);
   color: var(--red);
 }
 
+/* Panneaux & cartes */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.card-hover {
+  transition: transform 0.12s, border-color 0.12s;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: var(--lime);
+}
+
+/* Pills de version */
+.pill {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 17px;
+  font-weight: 800;
+  font-size: 16px;
+}
+.pill small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.pill.beta {
+  border-color: var(--gold);
+}
+
+/* Badges */
+.badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 18px;
+  color: var(--dark);
+  background: var(--muted);
+  font-family: var(--body);
+}
+.badge.gold { background: var(--gold); }
+.badge.lime { background: var(--lime-bright); }
+.badge.red { background: var(--red); }
+.badge.vio { background: var(--violet); }
+
+/* Tuiles de stats (patchs) */
+.stat-tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 18px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-tile::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--tile-color, var(--muted));
+}
+.stat-tile .num {
+  font-family: var(--title);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--tile-color, var(--white));
+}
+.stat-tile .lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+/* Lignes de changement (patchs) */
+.change {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.change.up { border-left: 5px solid var(--lime-bright); }
+.change.down { border-left: 5px solid var(--red); }
+
+/* Vide */
+.empty {
+  text-align: center;
+  padding: 28px 22px;
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: 15px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.empty strong {
+  color: var(--white);
+}
+
+/* Chips delta */
 .chip {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   border-radius: 999px;
   padding: 2px 8px;
 }
@@ -69,4 +273,13 @@ body {
 .chip.neg {
   background: color-mix(in srgb, var(--red) 18%, transparent);
   color: var(--red);
+}
+
+/* Placeholder d'icône de slot */
+.slot-ph {
+  background: linear-gradient(160deg, #3a3640, #2a2830);
+}
+
+input[type="range"] {
+  accent-color: var(--lime);
 }

@@ -12,23 +12,23 @@ const diff = diffJson as unknown as PatchDiff;
 
 function Arrow({ from, to }: { from: number; to: number }) {
   if (to > from)
-    return <span className="font-bold text-[var(--lime-bright)]">↑ +{to - from}</span>;
+    return <span className="font-extrabold text-[var(--lime-bright)]">↑ +{to - from}</span>;
   if (to < from)
-    return <span className="font-bold text-[var(--red)]">↓ {to - from}</span>;
+    return <span className="font-extrabold text-[var(--red)]">↓ {to - from}</span>;
   return <span className="text-[var(--muted)]">=</span>;
 }
 
-function ChangeRow({ change }: { change: PatchChangedItem }) {
+function ChangeRow({ change, kind }: { change: PatchChangedItem; kind: "up" | "down" }) {
   return (
-    <div className="panel mb-2 flex items-start gap-3 p-3">
+    <div className={`change ${kind}`}>
       {change.dataUri && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={change.dataUri} alt="" className="h-10 w-10 flex-shrink-0" />
       )}
       <div className="min-w-0">
-        <div className="text-sm font-bold">{change.name}</div>
+        <div className="mb-1.5 text-[15px] font-bold">{change.name}</div>
         {(change.mods ?? []).map((mod, i) => (
-          <div key={i} className="text-[13px] text-[var(--muted)]">
+          <div key={i} className="py-0.5 text-[13px] text-[#ddd8cf]">
             {mod.name} : {mod.minF}–{mod.maxF} →{" "}
             <strong className="text-white">
               {mod.minT}–{mod.maxT}
@@ -38,16 +38,18 @@ function ChangeRow({ change }: { change: PatchChangedItem }) {
           </div>
         ))}
         {(change.addE ?? []).map((e, i) => (
-          <div key={`a${i}`} className="text-[13px]">
-            <span className="font-bold text-[var(--lime-bright)]">
+          <div key={`a${i}`} className="py-0.5 text-[13px]">
+            <span className="font-extrabold text-[var(--lime-bright)]">
               + {e.formatted ?? e.name}
             </span>{" "}
             <span className="text-[var(--muted)]">(nouvel effet)</span>
           </div>
         ))}
         {(change.remE ?? []).map((e, i) => (
-          <div key={`r${i}`} className="text-[13px]">
-            <span className="font-bold text-[var(--red)]">− {e.formatted ?? e.name}</span>{" "}
+          <div key={`r${i}`} className="py-0.5 text-[13px]">
+            <span className="font-extrabold text-[var(--red)]">
+              − {e.formatted ?? e.name}
+            </span>{" "}
             <span className="text-[var(--muted)]">(retiré)</span>
           </div>
         ))}
@@ -58,18 +60,10 @@ function ChangeRow({ change }: { change: PatchChangedItem }) {
 
 function StatTile({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <div className="panel flex-1 p-4 text-center">
-      <div className="text-2xl font-extrabold" style={{ color }}>
-        {value}
-      </div>
-      <div className="mt-1 text-xs text-[var(--muted)]">{label}</div>
+    <div className="stat-tile" style={{ "--tile-color": color } as React.CSSProperties}>
+      <div className="num">{value}</div>
+      <div className="lbl">{label}</div>
     </div>
-  );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="panel p-5 text-center text-sm text-[var(--muted)]">{children}</div>
   );
 }
 
@@ -78,78 +72,82 @@ export default function PatchsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-extrabold">
-        Impact du <span className="text-[var(--lime-bright)]">patch</span>
-      </h1>
-
-      <div className="mt-4 flex items-center gap-3">
-        <div className="panel px-4 py-2 font-extrabold">
-          {diff.from.v}{" "}
-          <small className="font-normal text-[var(--muted)]">{diff.from.r} (live)</small>
+      <header className="mb-5 text-center">
+        <h1 className="text-[32px]">
+          Impact du <span className="accent">patch</span>
+        </h1>
+        <p className="mx-auto mt-2 max-w-[620px] text-[15px] text-[var(--muted)]">
+          Ce qui change entre deux versions du jeu, item par item.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          <div className="pill">
+            {diff.from.v}
+            <small>{diff.from.r} (live)</small>
+          </div>
+          <span className="text-[22px] font-extrabold text-[var(--lime-bright)]">➜</span>
+          <div className="pill beta">
+            {diff.to.v}
+            <small>{diff.to.r}</small>
+          </div>
         </div>
-        <span className="text-[var(--lime-bright)]">➜</span>
-        <div className="panel border-[var(--gold)] px-4 py-2 font-extrabold">
-          {diff.to.v}{" "}
-          <small className="font-normal text-[var(--muted)]">{diff.to.r}</small>
-        </div>
-      </div>
+      </header>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile value={diff.summary.added} label="Nouveaux items" color="var(--gold)" />
         <StatTile value={up.length} label="Items renforcés" color="var(--lime-bright)" />
         <StatTile value={down.length} label="Items affaiblis" color="var(--red)" />
-        <StatTile value={diff.summary.removed} label="Items retirés" color="var(--violet)" />
+        <StatTile value={diff.summary.removed} label="Items retirés" color="var(--muted)" />
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-lg font-extrabold">
-          ▲ Items renforcés{" "}
-          <span className="chip pos align-middle">{up.length}</span>
+        <h2 className="mb-3 flex items-center gap-2 text-[19px]">
+          ▲ Items renforcés <span className="badge lime">{up.length}</span>
         </h2>
         {up.length ? (
-          up.map((c, i) => <ChangeRow key={i} change={c} />)
+          up.map((c, i) => <ChangeRow key={i} change={c} kind="up" />)
         ) : (
-          <Empty>Aucun item renforcé dans ce patch.</Empty>
+          <div className="empty">Aucun item renforcé dans ce patch.</div>
         )}
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-lg font-extrabold">
-          ▼ Items affaiblis <span className="chip neg align-middle">{down.length}</span>
+        <h2 className="mb-3 flex items-center gap-2 text-[19px]">
+          ▼ Items affaiblis <span className="badge red">{down.length}</span>
         </h2>
         {down.length ? (
-          down.map((c, i) => <ChangeRow key={i} change={c} />)
+          down.map((c, i) => <ChangeRow key={i} change={c} kind="down" />)
         ) : (
-          <Empty>Aucun item affaibli dans ce patch.</Empty>
+          <div className="empty">Aucun item affaibli dans ce patch.</div>
         )}
       </section>
 
       {(diff.summary.changed ?? 0) === 0 && (
-        <Empty>
-          <strong className="text-white">
-            Ce patch ({diff.to.v}) ne rééquilibre aucun item.
-          </strong>
+        <div className="empty mt-4">
+          <strong>Ce patch ({diff.to.v}) ne rééquilibre aucun item.</strong>
           <br />
           Tous les patchs ne touchent pas les stats — ici, surtout de nouveaux items.
-        </Empty>
+        </div>
       )}
 
       <section className="mt-8">
-        <h2 className="mb-3 text-lg font-extrabold">
-          ✦ Nouveaux items{" "}
-          <span className="chip pos align-middle">{diff.summary.added}</span>
+        <h2 className="mb-3 flex items-center gap-2 text-[19px]">
+          ✦ Nouveaux items <span className="badge gold">{diff.summary.added}</span>
         </h2>
         {diff.added.length ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {diff.added.map((item, i) => (
-              <div key={i} className="panel flex items-center gap-3 p-3">
+              <div key={i} className="panel card-hover flex items-center gap-3 p-3">
                 {item.dataUri && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.dataUri} alt="" className="h-10 w-10 flex-shrink-0" />
+                  <img
+                    src={item.dataUri}
+                    alt=""
+                    className="h-11 w-11 flex-shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                  />
                 )}
                 <div className="min-w-0">
                   <div className="truncate text-sm font-bold">{item.name}</div>
-                  <div className="text-xs text-[var(--muted)]">
+                  <div className="mt-0.5 text-[11px] text-[var(--muted)]">
                     {item.type ?? "Objet"}
                     {item.level ? ` · Niv ${item.level}` : ""}
                   </div>
@@ -158,13 +156,9 @@ export default function PatchsPage() {
             ))}
           </div>
         ) : (
-          <Empty>Aucun nouvel item.</Empty>
+          <div className="empty">Aucun nouvel item.</div>
         )}
       </section>
-
-      <p className="mt-8 text-xs text-[var(--muted)]">
-        Données : dofusdude / DofusDB · mise à jour quotidienne automatique.
-      </p>
     </div>
   );
 }

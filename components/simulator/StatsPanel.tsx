@@ -216,7 +216,7 @@ export function StatsPanel({
   );
 
   return (
-    <aside className="panel h-fit p-4 lg:sticky lg:top-4">
+    <aside className="panel h-fit p-4 lg:sticky lg:top-[70px]">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-extrabold">Stats du build</h2>
         <span className="text-xs text-[var(--muted)]">{equippedCount} / 16 équipés</span>

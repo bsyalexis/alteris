@@ -29,7 +29,7 @@ export function SlotGrid({ index }: { index: GameDataIndex }) {
               active ? "border-[var(--lime)] shadow-[inset_0_0_0_1px_var(--lime)]" : ""
             }`}
           >
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--panel2)] text-xl">
+            <span className="slot-ph flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--line)] text-xl">
               {item && img ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={img} alt="" className="h-9 w-9" loading="lazy" />

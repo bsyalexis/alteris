@@ -11,13 +11,13 @@ const SECTIONS = [
     href: "/simulateur",
     emoji: "⚔️",
     title: "Simulateur de build",
-    text: "Compose ton équipement, vois tes stats en temps réel, compare deux builds, génère un build par caractéristiques, partage en un lien.",
+    text: "Assemble ton stuff, bonus de panoplie inclus. Compare deux builds, génère un build par caractéristiques, partage en un lien.",
   },
   {
     href: "/patchs",
     emoji: "📋",
     title: "Impact des patchs",
-    text: `${diff.from.v} → ${diff.to.v} · ${diff.summary.added} nouveaux items. Ce qui monte, ce qui baisse, et si ton build tient toujours.`,
+    text: `${diff.summary.added} nouveaux items entre ${diff.from.v} et ${diff.to.v}. Ce qui monte, ce qui baisse, et si ton build tient toujours.`,
   },
   {
     href: "/farm",
@@ -29,30 +29,41 @@ const SECTIONS = [
 
 export default function HomePage() {
   return (
-    <div className="py-10">
-      <div className="text-center">
-        <h1 className="text-4xl font-extrabold">
-          ALTÉRIS<span className="text-[var(--lime-bright)]">.</span>
-        </h1>
-        <p className="mx-auto mt-3 max-w-xl text-[var(--muted)]">
-          L&apos;outil Dofus qui aide à décider : qu&apos;est-ce que je gagne,
-          qu&apos;est-ce que je perds, et est-ce que ça vaut encore le coup après le patch.
-        </p>
-        <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--panel2)] px-3 py-1 text-xs text-[var(--muted)]">
-          <span className="h-2 w-2 rounded-full bg-[var(--lime)]" />
-          Dofus <b className="text-white">{gameVersion}</b> · mis à jour quotidiennement
-        </p>
+    <div className="py-6 text-center">
+      <h1 className="text-[38px]">
+        Altéris<span className="accent">.</span>
+      </h1>
+      <p className="mx-auto mt-2 max-w-[620px] text-[15px] leading-relaxed text-[var(--muted)]">
+        Le seul outil Dofus qui suit le temps : qu&apos;est-ce que je gagne, qu&apos;est-ce
+        que je perds, et est-ce que ça vaut encore le coup après le patch.
+      </p>
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <div className="pill">
+          {diff.from.v}
+          <small>{diff.from.r} (live)</small>
+        </div>
+        <span className="text-[22px] font-extrabold text-[var(--lime-bright)]">➜</span>
+        <div className="pill beta">
+          {diff.to.v}
+          <small>{diff.to.r}</small>
+        </div>
       </div>
 
-      <div className="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-3">
+      <Link href="/simulateur" className="cta mt-5">
+        ⚔️ Ouvrir le simulateur →
+      </Link>
+
+      <p className="mt-4 text-xs text-[var(--muted)]">
+        Dofus <b className="text-white">{gameVersion}</b> · données mises à jour
+        quotidiennement
+      </p>
+
+      <div className="mx-auto mt-10 grid max-w-4xl gap-3 text-left sm:grid-cols-3">
         {SECTIONS.map((s) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className="panel p-5 transition-transform hover:-translate-y-1 hover:border-[var(--lime)]"
-          >
+          <Link key={s.href} href={s.href} className="panel card-hover p-5">
             <div className="text-2xl">{s.emoji}</div>
-            <div className="mt-2 font-extrabold">{s.title}</div>
+            <div className="font-title mt-2 text-[17px]">{s.title}</div>
             <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--muted)]">{s.text}</p>
           </Link>
         ))}
